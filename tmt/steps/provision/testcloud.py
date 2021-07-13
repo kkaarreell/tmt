@@ -36,14 +36,15 @@ TESTCLOUD_IMAGES = os.path.join(TESTCLOUD_DATA, 'images')
 
 # Userdata for cloud-init
 USER_DATA = """#cloud-config
-password: %s
 chpasswd:
+  list: |
+    {user_name}:%s
   expire: false
 users:
   - default
   - name: {user_name}
 ssh_authorized_keys:
-  - {public_key}
+{public_keys}
 ssh_pwauth: true
 disable_root: false
 runcmd:
@@ -138,6 +139,9 @@ DOMAIN_TEMPLATE = """<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/d
 # VM defaults
 DEFAULT_BOOT_TIMEOUT = 60      # seconds
 DEFAULT_CONNECT_TIMEOUT = 60   # seconds
+
+# Generate ssh identities of type
+GENERATE_SSH_TYPES = ['ecdsa', 'rsa']
 
 
 class ProvisionTestcloud(tmt.steps.provision.ProvisionPlugin):
@@ -391,18 +395,24 @@ class GuestTestcloud(tmt.Guest):
             self.instance_name, image=self.image,
             connection='qemu:///session')
 
-    def prepare_ssh_key(self):
-        """ Prepare ssh key for authentication """
-        # Create ssh key paths
-        self.key = os.path.join(self.workdir, 'id_rsa')
-        self.pubkey = os.path.join(self.workdir, 'id_rsa.pub')
+    def prepare_ssh_key(self, key_types=GENERATE_SSH_TYPES):
+        """ Prepare ssh keys for authentication """
+        public_keys = ''
+        self.key = []
+        for key_type in key_types:
+            key_name = f"id_{key_type}"
+            key = os.path.join(self.workdir, key_name)
+            key_pub = os.path.join(self.workdir, f'{key_name}.pub')
 
-        # Generate ssh key
-        self.debug('Generating an ssh key.')
-        self.run(["ssh-keygen", "-f", self.key, "-N", ""], shell=False)
-        with open(self.pubkey, 'r') as pubkey:
-            self.config.USER_DATA = USER_DATA.format(
-                user_name=self.user, public_key=pubkey.read())
+            # Generate ssh key
+            self.debug(f'Generating an ssh key type {key_type}')
+            command = ["ssh-keygen", "-f", key, "-N", "", "-t", key_type]
+            self.run(command, shell=False)
+            self.key.append(key)
+            with open(key_pub, 'r') as pubkey:
+                public_keys += "- {}\n".format(pubkey.read().rstrip())
+        self.config.USER_DATA = USER_DATA.format(
+            user_name=self.user, public_keys=public_keys)
 
     def prepare_config(self):
         """ Prepare common configuration """
@@ -479,8 +489,8 @@ class GuestTestcloud(tmt.Guest):
             else:
                 self.instance.pci_net = "virtio-net-pci"
 
-        # Prepare ssh key
-        self.prepare_ssh_key()
+        # Prepare ssh keys
+        self.prepare_ssh_key(GENERATE_SSH_TYPES)
 
         # Boot the virtual machine
         self.info('progress', 'booting...', 'cyan')
