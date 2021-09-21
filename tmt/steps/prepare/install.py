@@ -51,6 +51,10 @@ class PrepareInstall(tmt.steps.prepare.PreparePlugin):
     # Supported methods
     _methods = [tmt.steps.Method(name='install', doc=__doc__, order=50)]
 
+    # Supported keys
+    _keys = tmt.steps.prepare.PreparePlugin._keys + \
+        ['package', 'directory', 'copr', 'exclude', 'missing']
+
     @classmethod
     def options(cls, how=None):
         """ Prepare command line options """
@@ -83,11 +87,11 @@ class PrepareInstall(tmt.steps.prepare.PreparePlugin):
 
     def show(self):
         """ Show provided scripts """
-        super().show(['package', 'directory', 'copr', 'exclude', 'missing'])
+        super().show(self._keys)
 
     def wake(self, data=None):
         """ Override options and wake up the guest """
-        super().wake(['package', 'directory', 'copr', 'exclude', 'missing'])
+        super().wake(self._keys)
 
         # Convert to list if necessary
         tmt.utils.listify(

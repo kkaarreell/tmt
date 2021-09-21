@@ -9,6 +9,7 @@ import fmf
 import requests
 
 import tmt
+from tmt.steps.provision import ProvisionPlugin
 from tmt.utils import WORKDIR_ROOT, ProvisionError, retry_session
 
 
@@ -183,6 +184,10 @@ class ProvisionTestcloud(tmt.steps.provision.ProvisionPlugin):
         tmt.steps.Method(name='virtual.testcloud', doc=__doc__, order=50),
         ]
 
+    # Supported keys
+    _keys = ProvisionPlugin._keys + ['image', 'user', 'memory',
+                                     'disk', 'connection']
+
     @classmethod
     def options(cls, how=None):
         """ Prepare command line options for testcloud """
@@ -221,11 +226,11 @@ class ProvisionTestcloud(tmt.steps.provision.ProvisionPlugin):
 
     def show(self):
         """ Show provision details """
-        super().show(['image', 'user', 'memory', 'disk', 'connection'])
+        super().show(self._keys)
 
     def wake(self, data=None):
         """ Override options and wake up the guest """
-        super().wake(['image', 'memory', 'disk', 'user', 'connection'])
+        super().wake(self._keys)
 
         # Convert memory and disk to integers
         for key in ['memory', 'disk']:
@@ -244,7 +249,7 @@ class ProvisionTestcloud(tmt.steps.provision.ProvisionPlugin):
 
         # Give info about provided data
         data = dict()
-        for key in ['image', 'user', 'memory', 'disk', 'connection']:
+        for key in self._keys:
             data[key] = self.get(key)
             if key == 'memory':
                 self.info('memory', f"{self.get('memory')} MB", 'green')
@@ -253,7 +258,8 @@ class ProvisionTestcloud(tmt.steps.provision.ProvisionPlugin):
             elif key == 'connection':
                 self.verbose(key, data[key], 'green')
             else:
-                self.info(key, data[key], 'green')
+                if data[key] is not None:
+                    self.info(key, data[key], 'green')
 
         # Create a new GuestTestcloud instance and start it
         self._guest = GuestTestcloud(data, name=self.name, parent=self.step)

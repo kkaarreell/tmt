@@ -1,6 +1,7 @@
 import click
 
 import tmt
+from tmt.steps.provision import ProvisionPlugin
 
 
 class ProvisionConnect(tmt.steps.provision.ProvisionPlugin):
@@ -37,6 +38,10 @@ class ProvisionConnect(tmt.steps.provision.ProvisionPlugin):
     # Supported methods
     _methods = [tmt.steps.Method(name='connect', doc=__doc__, order=50)]
 
+    # Supported keys
+    _keys = ProvisionPlugin._keys + \
+        ['guest', 'key', 'user', 'password', 'port']
+
     @classmethod
     def options(cls, how=None):
         """ Prepare command line options for connect """
@@ -68,11 +73,11 @@ class ProvisionConnect(tmt.steps.provision.ProvisionPlugin):
 
     def show(self):
         """ Show provision details """
-        super().show(['guest', 'key', 'user', 'password', 'port'])
+        super().show(self._keys)
 
     def wake(self, data=None):
         """ Override options and wake up the guest """
-        super().wake(['guest', 'key', 'user', 'password', 'port'])
+        super().wake(self._keys)
         if data:
             self._guest = tmt.Guest(data, name=self.name, parent=self.step)
 
@@ -91,7 +96,7 @@ class ProvisionConnect(tmt.steps.provision.ProvisionPlugin):
         if not guest:
             raise tmt.utils.SpecificationError(
                 'Provide a host name or an ip address to connect.')
-        data = dict(guest=guest, user=user)
+        data = dict(guest=guest, user=user, role=self.get('role'))
         self.info('guest', guest, 'green')
         self.info('user', user, 'green')
         if port:

@@ -9,6 +9,7 @@ import click
 import fmf
 
 import tmt
+import tmt.utils
 
 # Timeout in seconds of waiting for a connection
 CONNECTION_TIMEOUT = 60 * 4
@@ -25,6 +26,11 @@ class Provision(tmt.steps.Step):
     def __init__(self, data, plan):
         """ Initialize provision step data """
         super().__init__(data, plan)
+        # Check that the names are unique
+        names = {data.get('name') for data in self.data}
+        if len(self.data) > 1 and len(self.data) != len(names):
+            raise tmt.utils.GeneralError(
+                'Provision step names must be unique for multihost testing')
         # List of provisioned guests and loaded guest data
         self._guests = []
         self._guest_data = {}
@@ -106,6 +112,7 @@ class Provision(tmt.steps.Step):
                     plugin.go()
                     if isinstance(plugin, ProvisionPlugin):
                         plugin.guest().details()
+                    self.info('')
                 finally:
                     if isinstance(plugin, ProvisionPlugin):
                         self._guests.append(plugin.guest())
@@ -150,6 +157,9 @@ class ProvisionPlugin(tmt.steps.Plugin):
 
     # List of all supported methods aggregated from all plugins
     _supported_methods = []
+
+    # Common keys for all provision step implementations
+    _keys = ['role']
 
     @classmethod
     def base_command(cls, method_class=None, usage=None):
@@ -216,11 +226,13 @@ class Guest(tmt.utils.Common):
 
     # List of supported keys
     # (used for import/export to/from attributes during load and save)
-    _keys = ['guest', 'port', 'user', 'key', 'password']
+    _keys = ['guest', 'port', 'user', 'key', 'password', 'role']
 
     def __init__(self, data, name=None, parent=None):
         """ Initialize guest data """
         super().__init__(parent, name)
+        # Initialize role, it will be overridden by load() if specified
+        self.role = None
         self.load(data)
 
     def _random_name(self, prefix='', length=16):

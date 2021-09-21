@@ -1,9 +1,9 @@
 import os
-import re
 
 import click
 
 import tmt
+from tmt.steps.provision import ProvisionPlugin
 
 
 class ProvisionPodman(tmt.steps.provision.ProvisionPlugin):
@@ -23,7 +23,7 @@ class ProvisionPodman(tmt.steps.provision.ProvisionPlugin):
     _guest = None
 
     # Supported keys
-    _keys = ['image', 'container', 'pull']
+    _keys = ProvisionPlugin._keys + ['image', 'container', 'pull']
 
     # Supported methods
     _methods = [tmt.steps.Method(name='container', doc=__doc__, order=50)]
@@ -107,10 +107,9 @@ class GuestContainer(tmt.Guest):
 
     def save(self):
         """ Save guest data for future wake up """
-        data = {
-            'container': self.container,
-            'image': self.image,
-            }
+        data = super().save()
+        data['container'] = self.container
+        data['image'] = self.image
         return data
 
     def wake(self):
@@ -137,8 +136,10 @@ class GuestContainer(tmt.Guest):
         workdir = self.parent.plan.workdir
 
         # Deduce container name from workdir, because it is a path
-        # make it podman container name friendly
-        self.container = 'tmt' + re.sub('[/ ]', '-', workdir)
+        # make it podman container name friendly. Append a random
+        # suffix to avoid clashes when multihost is used.
+        self.container = self._random_name(
+            prefix='tmt' + re.sub('[/ ]', '-', workdir), length=40)
         self.verbose('name', self.container, 'green')
 
         # FIXME: Workaround for BZ#1900021 (f34 container on centos-8)

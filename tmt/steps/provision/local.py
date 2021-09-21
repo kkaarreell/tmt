@@ -35,7 +35,7 @@ class ProvisionLocal(tmt.steps.provision.ProvisionPlugin):
         super().go()
 
         # Create a GuestLocal instance
-        data = {'guest': 'localhost'}
+        data = {'guest': 'localhost', 'role': self.get('role')}
         self._guest = GuestLocal(data, name=self.name, parent=self.step)
 
     def guest(self):
