@@ -1,0 +1,13 @@
+summary: Wrapper to run whole tmt test suite in external system
+test: ./test.sh
+framework: beakerlib
+adjust:
+- when: external is defined
+  enabled: true
+require:
+- rsync
+- git-core
+- rpm-build
+- make
+- python3-docutils
+duration: 3h
