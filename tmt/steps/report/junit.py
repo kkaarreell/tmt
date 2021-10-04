@@ -55,6 +55,14 @@ class ReportJUnit(tmt.steps.report.ReportPlugin):
                 help='Path to the file to store junit to'),
             ] + super().options(how)
 
+    def show(self):
+        """ Show report details """
+        super().show(self._keys)
+
+    def wake(self, options=None):
+        """ Wake up the plugin (override data with command line) """
+        super().wake(options=options or self._keys)
+
     def go(self):
         """ Read executed tests and write junit """
         super().go()

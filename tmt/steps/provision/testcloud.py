@@ -183,6 +183,9 @@ class ProvisionTestcloud(tmt.steps.provision.ProvisionPlugin):
         tmt.steps.Method(name='virtual.testcloud', doc=__doc__, order=50),
         ]
 
+    # Supported keys
+    _keys = ["image", "user", "memory", "disk"]
+
     @classmethod
     def options(cls, how=None):
         """ Prepare command line options for testcloud """
@@ -216,11 +219,11 @@ class ProvisionTestcloud(tmt.steps.provision.ProvisionPlugin):
 
     def show(self):
         """ Show provision details """
-        super().show(['image', 'user', 'memory', 'disk'])
+        super().show(self._keys)
 
-    def wake(self, data=None):
+    def wake(self, options=None, data=None):
         """ Override options and wake up the guest """
-        super().wake(['image', 'memory', 'disk', 'user'])
+        super().wake(options=options or self._keys)
 
         # Convert memory and disk to integers
         for key in ['memory', 'disk']:

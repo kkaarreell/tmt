@@ -55,9 +55,9 @@ class ProvisionPodman(tmt.steps.provision.ProvisionPlugin):
         """ Show provision details """
         super().show(self._keys)
 
-    def wake(self, data=None):
+    def wake(self, options=None, data=None):
         """ Override options and wake up the guest """
-        super().wake(self._keys)
+        super().wake(options=options or self._keys)
         # Wake up podman instance
         if data:
             guest = GuestContainer(data, name=self.name, parent=self.step)

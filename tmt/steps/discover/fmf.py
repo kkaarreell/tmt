@@ -57,6 +57,11 @@ class DiscoverFmf(tmt.steps.discover.DiscoverPlugin):
     # Supported methods
     _methods = [tmt.steps.Method(name='fmf', doc=__doc__, order=50)]
 
+    # Supported keys
+    _keys = [
+        "url", "ref", "path", "test", "filter",
+        "modified-url", "modified-ref", "modified-only"]
+
     @classmethod
     def options(cls, how=None):
         """ Prepare command line options for given method """
@@ -91,9 +96,9 @@ class DiscoverFmf(tmt.steps.discover.DiscoverPlugin):
 
     def show(self):
         """ Show discover details """
-        super().show(['url', 'ref', 'path', 'test', 'filter'])
+        super().show(self._keys)
 
-    def wake(self):
+    def wake(self, options=None):
         """ Wake up the plugin (override data with command line) """
 
         # Handle backward-compatible stuff
@@ -108,11 +113,7 @@ class DiscoverFmf(tmt.steps.discover.DiscoverPlugin):
                 self.data[key] = [self.data[key]]
 
         # Process command line options, apply defaults
-        for option in ['url', 'ref', 'modified-url', 'modified-ref', 'path',
-                       'test', 'filter', 'modified-only']:
-            value = self.opt(option)
-            if value:
-                self.data[option] = value
+        super().wake(options=options or self._keys)
 
     def go(self):
         """ Discover available tests """

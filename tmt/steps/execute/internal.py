@@ -50,6 +50,9 @@ class ExecuteInternal(tmt.steps.execute.ExecutePlugin):
         tmt.steps.Method(name='beakerlib.tmt', doc=__doc__, order=80),
         ]
 
+    # Supported keys
+    _keys = ["script", "interactive"]
+
     @classmethod
     def options(cls, how=None):
         """ Prepare command line options for given method """
@@ -70,13 +73,11 @@ class ExecuteInternal(tmt.steps.execute.ExecutePlugin):
 
     def show(self, keys=None):
         """ Show execute details """
-        keys = (keys or []) + ['script', 'interactive']
-        super().show(keys)
+        super().show(keys or self._keys)
 
     def wake(self, options=None):
         """ Wake up the plugin (override data with command line) """
-        options = (options or []) + ['script', 'interactive']
-        super().wake(options=options)
+        super().wake(options=options or self._keys)
         # Make sure that script is a list
         tmt.utils.listify(self.data, keys=['script'])
 

@@ -40,7 +40,8 @@ class DiscoverShell(tmt.steps.discover.DiscoverPlugin):
             test_names = [test['name'] for test in tests]
             click.echo(tmt.utils.format('tests', test_names))
 
-    def wake(self):
+    def wake(self, options=None):
+        super().wake(options=options)
         # Check provided tests, default to an empty list
         if 'tests' not in self.data:
             self.data['tests'] = []

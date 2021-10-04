@@ -25,8 +25,9 @@ class ProvisionLocal(tmt.steps.provision.ProvisionPlugin):
     # Supported methods
     _methods = [tmt.steps.Method(name='local', doc=__doc__, order=50)]
 
-    def wake(self, data=None):
+    def wake(self, options=None, data=None):
         """ Override options and wake up the guest """
+        super().wake(options=options)
         if data:
             self._guest = GuestLocal(data, name=self.name, parent=self.step)
 

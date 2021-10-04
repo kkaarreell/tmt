@@ -165,6 +165,9 @@ class ReportHtml(tmt.steps.report.ReportPlugin):
     # Supported methods
     _methods = [tmt.steps.Method(name='html', doc=__doc__, order=50)]
 
+    # Supported keys
+    _keys = ["open"]
+
     @classmethod
     def options(cls, how=None):
         """ Prepare command line options for the html report """
@@ -173,6 +176,14 @@ class ReportHtml(tmt.steps.report.ReportPlugin):
                 '-o', '--open', is_flag=True,
                 help='Open results in your preferred web browser.'),
             ] + super().options(how)
+
+    def show(self):
+        """ Show report details """
+        super().show(self._keys)
+
+    def wake(self, options=None):
+        """ Wake up the plugin (override data with command line) """
+        super().wake(options=options or self._keys)
 
     def go(self):
         """ Process results """

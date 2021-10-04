@@ -376,7 +376,7 @@ class Plugin(tmt.utils.Common, metaclass=PluginIndex):
             return
         for option in options:
             value = self.opt(option)
-            if value:
+            if value is not None:
                 self.data[option] = value
 
     def go(self):
