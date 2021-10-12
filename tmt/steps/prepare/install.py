@@ -254,4 +254,4 @@ class PrepareInstall(tmt.steps.prepare.PreparePlugin):
                 debuginfo_packages, title="debuginfo")
             # Make sure debuginfo-install is present on the target system
             guest.execute(f"{command} install -y /usr/bin/debuginfo-install")
-            guest.execute(f"debuginfo-install -y {packages}")
+            guest.execute(f"sudo debuginfo-install -y {packages}")

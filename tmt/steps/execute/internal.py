@@ -212,18 +212,19 @@ class ExecuteInternal(tmt.steps.execute.ExecutePlugin):
                         backup = reboot_file + REBOOT_BACKUP_EXT
                         self.debug(
                             f"Back up '{reboot_file}' as '{backup}'.", level=2)
-                        guest.execute(f'mv "{reboot_file}" "{backup}"')
+                        guest.execute(f'sudo mv "{reboot_file}" "{backup}"')
                         backed_up.append(reboot_file)
                     else:
                         # Unrelated error, re-raise
                         raise error
-                guest.execute(f'cp "{reboot_script_path}" "{reboot_file}" && '
-                              f'chmod +x "{reboot_file}"')
+                guest.execute(
+                    f'sudo cp "{reboot_script_path}" "{reboot_file}" && '
+                    f'sudo chmod +x "{reboot_file}"')
             yield
         finally:
             self.debug("Remove our reboot script implementations.", level=2)
             for reboot_file in REBOOT_SCRIPT_PATHS:
-                guest.execute(f'rm "{reboot_file}"')
+                guest.execute(f'sudo rm "{reboot_file}"')
             # FIXME: This part may not be executed if connection to the guest
             #        drops in the middle and the guest may be left in an
             #        inconsistent state.
@@ -231,7 +232,7 @@ class ExecuteInternal(tmt.steps.execute.ExecutePlugin):
                 backup = reboot_file + REBOOT_BACKUP_EXT
                 self.debug(
                     f"Move backup '{backup}' to '{reboot_file}'.", level=2)
-                guest.execute(f'mv "{backup}" "{reboot_file}"')
+                guest.execute(f'sudo mv "{backup}" "{reboot_file}"')
 
     def _handle_reboot(self, test, guest):
         """

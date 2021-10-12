@@ -558,7 +558,7 @@ class Guest(tmt.utils.Common):
         For now works only with RHEL based distributions.
         """
         self.debug("Ensure that rsync is installed on the guest.", level=3)
-        self.execute("rpm -q rsync || yum install -y rsync")
+        self.execute("rpm -q rsync || sudo yum install -y rsync")
 
     @classmethod
     def requires(cls):
