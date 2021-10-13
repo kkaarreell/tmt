@@ -222,6 +222,7 @@ class Guest(tmt.utils.Common):
         """ Initialize guest data """
         super().__init__(parent, name)
         self.load(data)
+        self.sudo = '' if self.user == 'root' else 'sudo '
 
     def _random_name(self, prefix='', length=16):
         """ Generate a random name """
@@ -558,7 +559,7 @@ class Guest(tmt.utils.Common):
         For now works only with RHEL based distributions.
         """
         self.debug("Ensure that rsync is installed on the guest.", level=3)
-        self.execute("rpm -q rsync || sudo yum install -y rsync")
+        self.execute(f"rpm -q rsync || {self.sudo}yum install -y rsync")
 
     @classmethod
     def requires(cls):

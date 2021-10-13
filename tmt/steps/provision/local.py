@@ -54,7 +54,7 @@ class GuestLocal(tmt.Guest):
         """ Prepare localhost using ansible playbook """
         playbook = self._ansible_playbook_path(playbook)
         stdout, stderr = self.run(
-            f'sudo sh -c "stty cols {tmt.utils.OUTPUT_WIDTH}; '
+            f'{self.sudo} sh -c "stty cols {tmt.utils.OUTPUT_WIDTH}; '
             f'{self._export_environment()}ansible-playbook'
             f'{self._ansible_verbosity()} -c local -i localhost, {playbook}"')
         self._ansible_summary(stdout)
@@ -73,6 +73,11 @@ class GuestLocal(tmt.Guest):
 
     def pull(self, source=None, destination=None, options=None):
         """ Nothing to be done to pull workdir """
+
+    def start(self):
+        """ Check guest details """
+        user = self.execute('whoami')[0].strip()
+        self.sudo = '' if user == 'root' else 'sudo '
 
     @classmethod
     def requires(cls):

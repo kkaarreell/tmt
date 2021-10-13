@@ -104,6 +104,7 @@ class GuestContainer(tmt.Guest):
 
         # Instances variables initialized later
         self.container_id = None
+        self.sudo = ''
 
     def save(self):
         """ Save guest data for future wake up """
@@ -150,6 +151,10 @@ class GuestContainer(tmt.Guest):
             ['run'] + workaround +
             ['--name', self.container, '-v', f'{workdir}:{workdir}:Z',
              '-itd', self.image])[0].strip()
+
+        # Recheck the need for sudo
+        user = self.execute('whoami')[0].strip()
+        self.sudo = '' if user == 'root' else 'sudo '
 
     def reboot(self, hard=False):
         """ Restart the container, return True if successful  """
