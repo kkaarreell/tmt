@@ -40,7 +40,7 @@ STORE_NAME="$BEAKERLIB_DIR/submitted/"
 cp $FILENAME $STORE_NAME
 echo "File $FILENAME stored to $STORE_NAME"
 """
-FILE_SUBMIT_NAME = "tmt_file_submit.sh"
+FILE_SUBMIT_NAME = "tmt-file-submit"
 
 
 class ExecuteInternal(tmt.steps.execute.ExecutePlugin):
@@ -297,8 +297,7 @@ class ExecuteInternal(tmt.steps.execute.ExecutePlugin):
         tests = self.prepare_tests()
         exit_first = self.get('exit-first', default=False)
         # Prepare TMT_SUBMIT
-        with open(os.path.join(self.step.workdir, FILE_SUBMIT_NAME), 'w') as fw:
-            fw.write(FILE_SUBMIT_SCRIPT)
+        self.step.write(FILE_SUBMIT_NAME, FILE_SUBMIT_SCRIPT)
         for guest in self.step.plan.provision.guests():
             with self._setup_reboot(guest):
                 # Push workdir to guest and execute tests
