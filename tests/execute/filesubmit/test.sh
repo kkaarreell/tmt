@@ -9,7 +9,7 @@ rlJournalStart
     rlPhaseEnd
 
     rlPhaseStartTest
-        rlRun "tmt run -vfi $tmp -a"
+        rlRun "tmt run -vfi $tmp -a provision -h container"
         FILE_PATH=$tmp/plans/default/execute/data/submitted/this_file.txt
         BUNDLE_PATH=$tmp/plans/default/execute/data/submitted/tmp-bundle_name.tar.gz
 
