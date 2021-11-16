@@ -87,11 +87,14 @@ class DiscoverFmf(tmt.steps.discover.DiscoverPlugin):
             click.option(
                 '-F', '--filter', metavar='FILTERS', multiple=True,
                 help='Include only tests matching the filter.'),
+            click.option(
+                '--link', metavar="REL_LINK", multiple=True,
+                help="Filter by linked objects (in the form of [relation:]target)"),
             ] + super().options(how)
 
     def show(self):
         """ Show discover details """
-        super().show(['url', 'ref', 'path', 'test', 'filter'])
+        super().show(['url', 'ref', 'path', 'test', 'filter', 'link'])
 
     def wake(self):
         """ Wake up the plugin (override data with command line) """
@@ -109,7 +112,7 @@ class DiscoverFmf(tmt.steps.discover.DiscoverPlugin):
 
         # Process command line options, apply defaults
         for option in ['url', 'ref', 'modified-url', 'modified-ref', 'path',
-                       'test', 'filter', 'modified-only']:
+                       'test', 'filter', 'modified-only', 'link']:
             value = self.opt(option)
             if value:
                 self.data[option] = value
@@ -190,6 +193,10 @@ class DiscoverFmf(tmt.steps.discover.DiscoverPlugin):
         names = list(tmt.base.Test._opt('names') or self.get('test', []))
         if names:
             self.info('names', fmf.utils.listed(names), 'green')
+        # Check the 'test --link' option first, then from discover
+        links = list(tmt.base.Test._opt('link') or self.get('link', []))
+        for link_ in links:
+            self.info('link', link_, 'green')
 
         # Filter only modified tests if requested
         modified_only = self.get('modified-only')
@@ -220,7 +227,7 @@ class DiscoverFmf(tmt.steps.discover.DiscoverPlugin):
             return
         tree = tmt.Tree(path=tree_path, context=self.step.plan._fmf_context())
         self._tests = tree.tests(filters=filters, names=names,
-                                 conditions=["manual is False"])
+                                 conditions=["manual is False"], links=links)
 
         # Prefix tests and handle library requires
         for test in self._tests:
